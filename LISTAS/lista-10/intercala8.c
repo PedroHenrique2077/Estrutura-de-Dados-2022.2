@@ -1,60 +1,65 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
-int vetor[1600006];
-
-void merge(int *vetor, int inicio, int fim, int meio)
+void merge(int *v, int l, int m, int r)
 {
-    int aux[fim - inicio + 1];
-    int Ai = inicio, Bi = meio + 1, auxi = 0, p;
+    int *v2 = malloc((r - l + 1) * sizeof(int));
+    int i = l;
+    int j = m + 1;
+    int k = 0;
 
-    while (Ai <= meio && Bi <= fim)
+    while (i <= m && j <= r)
     {
-        if (vetor[Ai] <= vetor[Bi])
+        if (v[i] <= v[j])
         {
-            aux[auxi++] = vetor[Ai++];
+            v2[k++] = v[i++];
         }
         else
         {
-            aux[auxi++] = vetor[Bi++];
+            v2[k++] = v[j++];
         }
     }
 
-    while (Ai <= meio)
+    while (i <= m)
     {
-        aux[auxi++] = vetor[Ai++];
+        v2[k++] = v[i++];
     }
-    while (Bi <= fim)
+    while (j <= r)
     {
-        aux[auxi++] = vetor[Bi++];
+        v2[k++] = v[j++];
     }
 
-    int v = 0;
-    for (p = inicio; p <= fim; ++p)
+    k = 0;
+    for (int p = l; p <= r; ++p)
     {
-        vetor[p] = aux[v++];
+        v[p] = v2[k++];
     }
 }
 
-int main()
+int main(void)
 {
 
-    int read, tamanho = 0;
+    int entrada, tam = 0, vetor[1600006];
+
     for (int i = 0; i < 8; ++i)
     {
-        scanf("%d", &read);
-        if (read == 0)
+        scanf("%d", &entrada);
+        if (entrada == 0)
             continue;
-        for (int j = 0; j < read; ++j)
-            scanf("%d", &vetor[tamanho + j]);
-        merge(&vetor[0], 0, tamanho + read - 1, tamanho - 1);
-        tamanho += read;
+        for (int j = 0; j < entrada; ++j)
+            scanf("%d", &vetor[tam + j]);
+        merge(&vetor[0], 0, tam - 1, tam + entrada - 1);
+        tam += entrada;
     }
 
     printf("%d", vetor[0]);
-    for (int i = 1; i < tamanho; ++i)
+
+    for (int i = 1; i < tam; ++i)
+    {
         printf(" %d", vetor[i]);
+    }
+
     printf("\n");
+
     return 0;
 }

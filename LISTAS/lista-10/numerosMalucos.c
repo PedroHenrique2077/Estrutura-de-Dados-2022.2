@@ -1,95 +1,162 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void merge(int *vetor, int i, int f, int m)
+int *intercala(int *a, int la, int ra, int *b, int lb, int rb)
 {
-    int vetorAux[f - i + 1];
-    int Ai = i, Bi = m + 1, AUXi = 0, p;
+    int ta = (ra - la +1);
+    int tb = (rb - lb +1);
 
-    while (Ai <= m && Bi <= f)
+    int *c = malloc((ta + tb) * sizeof(int));
+
+    int lc = 0;
+    int rc = (ta + tb - 1);
+
+    int ia = la;
+    int ib = lb;
+    int ic = 0;
+
+    while(ia<=ra && ib <= rb)
     {
-        if (vetor[Ai] <= vetor[Bi])
+        if(a[ia] < b[ib])
         {
-            vetorAux[AUXi++] = vetor[Ai++];
+            c[ic++] = a[ia++];
+        }
+        else{
+            c[ic++] = b[ib++];
+        }
+    }
+
+    while(ia<=ra)
+    {
+        c[ic++] = a[ia++];
+    }
+    while(ib<=rb)
+    {
+        c[ic++] = b[ib++];
+    }
+
+    return c;
+}
+
+void merge(int *v, int l, int m, int r)
+{
+    int *v2 = malloc((r - l + 1) * sizeof(int));
+    int i = l;
+    int j = m + 1;
+    int k = 0;
+
+    while (i <= m && j <= r)
+    {
+        if (v[i] <= v[j])
+        {
+            v2[k++] = v[i++];
         }
         else
         {
-            vetorAux[AUXi++] = vetor[Bi++];
+            v2[k++] = v[j++];
         }
     }
 
-    while (Ai <= m)
+    while (i <= m)
     {
-        vetorAux[AUXi++] = vetor[Ai++];
+        v2[k++] = v[i++];
     }
-    while (Bi <= f)
+    while (j <= r)
     {
-        vetorAux[AUXi++] = vetor[Bi++];
-    }
-
-    int v = 0;
-    for (p = i; p <= f; ++p)
-    {
-        vetor[p] = vetorAux[v++];
-    }
-}
-
-void mergeSort(int *vetor, int i, int j)
-{
-    if (i >= j)
-        return;
-
-    int meio = i + (j - i) / 2;
-    mergeSort(vetor, i, meio);
-    mergeSort(vetor, meio + 1, j);
-    merge(vetor, i, j, meio);
-}
-
-int searchNumber(int *vetor, int search, int len)
-{
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        if (vetor[i] == search)
-            return i;
-    }
-    return -1;
-}
-
-void removeRep(int *vetor, int f, int i)
-{
-    int vetAux[f - i + 1], p, auxI = 0, h, k;
-
-    for (p = 0; p <= f; p++)
-    {
-        if (p == 0)
-            vetAux[auxI++] = vetor[p];
-
-        if (searchNumber(vetAux, vetor[p], auxI) == -1)
-            vetAux[auxI++] = vetor[p];
+        v2[k++] = v[j++];
     }
 
-    for (h = 0; h < f - 1; h++)
+    k = 0;
+    for (int p = l; p <= r; ++p)
     {
-        vetor[h] = vetAux[h];
+        v[p] = v2[k++];
     }
 }
 
-int main()
+void mergeSort(int *v, int l, int r)
 {
-    int i, tam;
-    int *vetor;
-
-    scanf("%d", &tam);
-    vetor = (int *)malloc(tam * sizeof(int));
-
-    for (i = 0; i < tam; i++)
+    if (l < r)
     {
-        scanf("%d", &vetor[i]);
+        int m = (l + r) / 2;
+        mergeSort(v, l, m);
+        mergeSort(v, m + 1, r);
+        merge(v, l, m, r);
+    }
+}
+
+int buscaBinaria(int *vetor, int tam, int n)
+{
+    int ini=0;
+    int fim = tam-1;
+    int meio;
+
+    while (ini <= fim)
+    {
+        meio = (ini + fim)/2;
+
+        if(n < vetor[meio])
+        {
+            fim = meio-1;
+        } 
+        else if(n > vetor[meio])
+        {
+            ini = meio+1;
+        } 
+        else return meio;
+
+        return -1;
+        
+    }
+}
+
+int main(void)
+{
+    int v[200000];
+    int n;
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++)
+    {
+        scanf("%d", &v[i]);
     }
 
-    mergeSort(vetor, 0, tam - 1);
-    removeRep(vetor, tam - 1, 0);
+    mergeSort(v, 0, n - 1);
+
+    int novoi = 0;
+
+    for(int i = 1; i < n; i++)
+    {
+        if(v[i] != v[novoi])
+        {
+            v[++novoi] = v[i];
+        }
+    }
+
+    int novor = novoi;
+
+    if(novor % 2 == 0)
+    {
+        v[++novor] = 1000000000;
+    }
+
+    int nmv[66000]; int nmvi = -1;
+
+    for(int i = 0; i < novor; i +=2)
+    {
+        nmv[++nmvi] = v[i] + v[i + 1];
+        if(buscaBinaria(v, novor, nmv[nmvi]) != -1)
+        {
+            nmvi--;
+        }
+    }
+
+    int *c = intercala(v, 0, novor, nmv, 0, nmvi);
+
+    for(int i = 0; i <= (novor + nmvi); i+= 4)
+    {
+        printf("%d\n", c[i]);
+    }
+
+    printf("Elementos: %d\n", novor + nmvi);
 
     return 0;
 }
