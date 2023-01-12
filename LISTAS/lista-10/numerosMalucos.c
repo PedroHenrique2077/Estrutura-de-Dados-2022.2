@@ -1,162 +1,123 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int *intercala(int *a, int la, int ra, int *b, int lb, int rb)
+void swap(int *a, int *b)
 {
-    int ta = (ra - la +1);
-    int tb = (rb - lb +1);
-
-    int *c = malloc((ta + tb) * sizeof(int));
-
-    int lc = 0;
-    int rc = (ta + tb - 1);
-
-    int ia = la;
-    int ib = lb;
-    int ic = 0;
-
-    while(ia<=ra && ib <= rb)
-    {
-        if(a[ia] < b[ib])
-        {
-            c[ic++] = a[ia++];
-        }
-        else{
-            c[ic++] = b[ib++];
-        }
-    }
-
-    while(ia<=ra)
-    {
-        c[ic++] = a[ia++];
-    }
-    while(ib<=rb)
-    {
-        c[ic++] = b[ib++];
-    }
-
-    return c;
+    int t = *a;
+    *a = *b;
+    *b = t;
 }
 
-void merge(int *v, int l, int m, int r)
+int particao(int *array, int size)
 {
-    int *v2 = malloc((r - l + 1) * sizeof(int));
-    int i = l;
-    int j = m + 1;
-    int k = 0;
-
-    while (i <= m && j <= r)
+    int left = -1, right = size - 1;
+    int pivot = array[right];
+    while (1)
     {
-        if (v[i] <= v[j])
-        {
-            v2[k++] = v[i++];
-        }
+        while (array[++left] < pivot)
+            ;
+        while (pivot < array[--right] && right > left)
+            ;
+
+        if (left >= right)
+            break;
+        swap(&array[left], &array[right]);
+    }
+    swap(&array[left], &array[size - 1]);
+    return left;
+}
+
+int removeDup(int *array, int size)
+{
+    int unique_size = 1;
+    for (int i = 1; i < size; i++)
+        if (array[i] != array[unique_size - 1])
+            array[unique_size++] = array[i];
+    return unique_size;
+}
+
+void quickSort(int *v, int size)
+{
+    if (size < 2) return;
+
+    if (v[size - 1] < v[(size - 1) / 2])
+    {
+        swap(&v[size - 1], &v[(size - 1) / 2]);
+    }
+    if (v[(size - 1) / 2] < v[0])
+    {
+        swap(&v[(size - 1) / 2], &v[0]);
+    }
+    if (v[(size - 1) / 2] < v[size - 1])
+    {
+        swap(&v[(size - 1) / 2], &v[size - 1]);
+    }
+
+    int d = particao(v, size);
+    
+    quickSort(v, d);
+    quickSort(v + d + 1, size - d - 1);
+}
+
+void merge(int *a, int sizea, int *b, int sizeb)
+{
+    int *v2 = (int *)malloc((sizea + sizeb) * sizeof(int));
+    int i = 0, j = 0, k = 0;
+    for (; i < sizea && j < sizeb; k++)
+    {
+        if (a[i] <= b[j])
+            v2[k] = a[i++];
         else
-        {
-            v2[k++] = v[j++];
-        }
+            v2[k] = b[j++];
     }
 
-    while (i <= m)
-    {
-        v2[k++] = v[i++];
-    }
-    while (j <= r)
-    {
-        v2[k++] = v[j++];
-    }
+    while (i < sizea)
+        v2[k++] = a[i++];
+    while (j < sizeb)
+        v2[k++] = b[j++];
 
-    k = 0;
-    for (int p = l; p <= r; ++p)
-    {
-        v[p] = v2[k++];
-    }
-}
+    for (k = 0, i = 0; i < (sizea + sizeb); i++, k++)
+        a[i] = v2[k];
 
-void mergeSort(int *v, int l, int r)
-{
-    if (l < r)
-    {
-        int m = (l + r) / 2;
-        mergeSort(v, l, m);
-        mergeSort(v, m + 1, r);
-        merge(v, l, m, r);
-    }
-}
-
-int buscaBinaria(int *vetor, int tam, int n)
-{
-    int ini=0;
-    int fim = tam-1;
-    int meio;
-
-    while (ini <= fim)
-    {
-        meio = (ini + fim)/2;
-
-        if(n < vetor[meio])
-        {
-            fim = meio-1;
-        } 
-        else if(n > vetor[meio])
-        {
-            ini = meio+1;
-        } 
-        else return meio;
-
-        return -1;
-        
-    }
+    free(v2);
 }
 
 int main(void)
 {
-    int v[200000];
     int n;
-    scanf("%d", &n);
+    scanf(" %d", &n);
+
+    int *v = (int *)malloc(sizeof(int) * (2 * n));
+
     for (int i = 0; i < n; i++)
     {
-        scanf("%d", &v[i]);
+        scanf(" %d", v + i);
     }
 
-    mergeSort(v, 0, n - 1);
+    quickSort(v, n);
 
-    int novoi = 0;
+    int tam = removeDup(v, n);
 
-    for(int i = 1; i < n; i++)
+    if (tam % 2)
+        v[tam++] = 1000000000;
+
+    int c = 0;
+
+    for (int i = 0; i < tam - 1; i += 2)
     {
-        if(v[i] != v[novoi])
-        {
-            v[++novoi] = v[i];
-        }
+        v[tam + c++] = v[i] + v[i + 1];
     }
 
-    int novor = novoi;
+    merge(v, tam, v + tam, c);
 
-    if(novor % 2 == 0)
+    tam = removeDup(v, tam + c);
+
+    for (int i = 0; i < tam; i += 4)
     {
-        v[++novor] = 1000000000;
+        printf("%d\n", v[i]);
     }
 
-    int nmv[66000]; int nmvi = -1;
-
-    for(int i = 0; i < novor; i +=2)
-    {
-        nmv[++nmvi] = v[i] + v[i + 1];
-        if(buscaBinaria(v, novor, nmv[nmvi]) != -1)
-        {
-            nmvi--;
-        }
-    }
-
-    int *c = intercala(v, 0, novor, nmv, 0, nmvi);
-
-    for(int i = 0; i <= (novor + nmvi); i+= 4)
-    {
-        printf("%d\n", c[i]);
-    }
-
-    printf("Elementos: %d\n", novor + nmvi);
+    printf("Elementos: %d\n", tam);
 
     return 0;
 }
