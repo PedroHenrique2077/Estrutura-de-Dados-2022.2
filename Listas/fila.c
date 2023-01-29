@@ -1,45 +1,80 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-struct filast
-{
-    int *v;
-    int size;
-    int inicio,fim;
-    int ocupados;
+typedef struct fila_st {
+    int elementos[100];
+    int inicio, fim;
+}fila_st;
+
+int esta_vazia(fila_st *f) {
+    return f->inicio == f->fim;
+}
+
+void enfilera(fila_st *f, int novo) {
+    f->elementos[f->fim++] = novo;
+}
+
+int desenfilera(fila_st *f) {
+    if(esta_vazia(f)) {
+        printf("Fila vazia\n");
+        return -1;
+    }
+    return f->elementos[f->inicio++];
+}
+
+void imprime_fila_ao_contrario(fila_st *f) {
+    int aux = desenfilera(f);
+    if(!esta_vazia(f)) {
+        imprime_fila_ao_contrario(f);
+    }
+    printf("%d ", aux);
+    enfilera(f, aux);
+}
+
+void imprime_fila(fila_st *f) {
+    int aux = desenfilera(f);
+    printf("%d ", aux);
+    if(!esta_vazia(f)) {
+        imprime_fila(f);
+    }
+    enfilera(f, aux);
+}
+
+//__________________________________________________________________
+// fila implementada com lista encadeada
+
+struct Node {
+    int data;
+    struct Node* next;
 };
 
-int inicializaFila(struct filast *fila, int s)
- {
-    fila-> size = s;
-    fila-> v = malloc(s * sizeof(int));
-    if(fila-> v == NULL) return 0;
-    fila-> ocupados = 0;
-    fila-> inicio = 1;
-    fila-> fim = 0;
-    return 1;
- }
+struct Queue {
+    struct Node* front;
+    struct Node* rear;
+};
 
-int enfila(struct filast *f, int e)
- {
-    if(f -> fim == f -> inicio) return 0;
-    f -> v[f -> fim++] = e;
-    f -> fim = f -> fim % f -> size;
-    f -> ocupados++;
-    return 1;
- }
-
-void desenfila(struct filast *f)
-{
-    f -> ocupados--;
-    f -> inicio = (f -> inicio + 1) % f -> size;
+void enqueue(struct Queue* q, int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    if (q->rear == NULL) {
+        q->front = q->rear = newNode;
+        return;
+    }
+    q->rear->next = newNode;
+    q->rear = newNode;
 }
 
-int estaVazia(struct filast *f)
-{
-    return f -> ocupados == 0;
-}
-
-int espia(struct filast *f)
-{
-    return f -> v[(f -> inicio + 1) / f -> size];
+int dequeue(struct Queue* q) {
+    if (q->front == NULL) {
+        return 0;
+    }
+    struct Node* temp = q->front;
+    int data = temp->data;
+    q->front = q->front->next;
+    if (q->front == NULL) {
+        q->rear = NULL;
+    }
+    free(temp);
+    return data;
 }
